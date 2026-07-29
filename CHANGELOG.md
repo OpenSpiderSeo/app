@@ -5,6 +5,20 @@ All notable changes to **OpenSpider** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] — 2026-07-30
+
+### Changed
+
+- Crawl progress: expose in-flight `active` workers; honest queue/progress bar; poll state while crawling.
+- SEO summary: ranked lists + tabs (worst first); Issues workspace tabs Summary / List / How to fix.
+- Compact UI scale + page enter motion; hide stub CTAs (session, schedule form, AI/HTML tools, PDF/JSON export, IndexNow submit).
+- Crawl URL field seeds from the active project `startUrl` (no more `example.com` default).
+- Chart tooltips: light text on dark background (readable Score labels).
+
+### Fixed
+
+- Sitemap export client wired to Go `POST /api/report/export-sitemap`.
+
 ## [1.0.4] — 2026-07-29
 
 ### Fixed
@@ -66,6 +80,7 @@ First clean public release of the **Neutralino.js + Vite/React/TS + Go extension
 - **WSL**: native window needs WSLg; otherwise run on Windows for GUI QA.
 - Stubs remain for session/schedule/ranks/metrika/indexnow/auto-update where not yet implemented.
 
+[1.0.5]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.5
 [1.0.4]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.4
 [1.0.3]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.3
 [1.0.2]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.2

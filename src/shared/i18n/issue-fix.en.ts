@@ -6,8 +6,10 @@ export const issueFixEn = {
   'issues.fix.found': 'What we found',
   'issues.fix.method': 'How we detected it',
   'issues.fix.better': 'Recommended fix',
-  'issues.fix.pick': 'Select a row to see the fix guide for that issue.',
+  'issues.fix.pick': 'Select a row in List — the fix guide for that issue appears here.',
   'issues.fix.close': 'Close',
+  'issues.fix.backToList': 'Back to list',
+  'issues.fix.openList': 'Open list',
 
   'fix.http.4xx.title': 'HTTP 4xx client error',
   'fix.http.4xx.why':

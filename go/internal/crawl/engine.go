@@ -144,6 +144,7 @@ func (e *Engine) progressLocked() types.CrawlProgress {
 	return types.CrawlProgress{
 		Status:        e.status,
 		Queued:        len(e.frontier),
+		Active:        e.activeJobs,
 		Fetched:       len(e.pages),
 		Errors:        e.errorCount,
 		MaxURLs:       e.options.MaxURLs,

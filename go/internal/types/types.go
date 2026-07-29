@@ -52,6 +52,7 @@ type CrawlOptions struct {
 type CrawlProgress struct {
 	Status        string  `json:"status"`
 	Queued        int     `json:"queued"`
+	Active        int     `json:"active"`
 	Fetched       int     `json:"fetched"`
 	Errors        int     `json:"errors"`
 	MaxURLs       int     `json:"maxUrls,omitempty"`

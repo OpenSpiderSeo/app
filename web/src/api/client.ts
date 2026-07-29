@@ -46,7 +46,8 @@ export function createOpenSpiderApi(): OpenSpiderApi {
     saveSecrets: (patch) => apiPost('/api/secrets', patch),
     listOssCredits: () => apiGet('/api/oss/credits'),
 
-    exportSitemap: async () => ({ error: 'Sitemap export not yet ported to Go' }),
+    exportSitemap: async () =>
+      apiPost<{ path: string } | { error: string }>('/api/report/export-sitemap'),
     probeLlmsTxt: (origin) =>
       apiPost<LlmsTxtProbe>('/api/labs/llms', { origin }),
     runPagespeed: (url, preferLocal) =>

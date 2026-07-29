@@ -64,7 +64,7 @@ export const CrawlStatusBar = memo(function CrawlStatusBar({
         <span className="crawl-status__label">{t(statusKey)}</span>
         <span className="crawl-status__nums font-mono">
           {progress
-            ? `${progress.fetched}${progress.queued > 0 ? `/+${progress.queued}` : ''}`
+            ? compactCrawlNums(progress)
             : pct != null
               ? `${pct}%`
               : '…'}
@@ -83,14 +83,17 @@ export const CrawlStatusBar = memo(function CrawlStatusBar({
           </div>
           <CrawlLiveStats progress={progress ?? emptyProgressFallback(status)} compact />
         </div>
-        <div className="crawl-status__pct font-mono">{crawlProgressLabel(progress ?? emptyProgressFallback(status))}</div>
+        <div className="crawl-status__pct font-mono">
+          {crawlProgressLabel(progress ?? emptyProgressFallback(status)) ||
+            (pct == null ? t('crawl.stats.indeterminate') : '')}
+        </div>
       </button>
 
       <div className="crawl-status__track" aria-hidden>
         <div
           className={`crawl-status__fill ${pct == null ? 'crawl-status__fill--pulse' : ''}`}
-          style={pct != null ? { width: `${pct}%` } : undefined}
-          title={pct != null ? `${pct}%` : undefined}
+          style={pct != null ? { width: `${Math.max(2, pct)}%` } : undefined}
+          title={pct != null ? `${pct}%` : t('crawl.stats.indeterminate')}
         />
       </div>
 
@@ -135,9 +138,21 @@ function emptyProgressFallback(status: CrawlStatusName) {
     status,
     fetched: 0,
     queued: 0,
+    active: 0,
     errors: 0,
     startedAt: null,
     finishedAt: null,
     startUrl: null,
   };
+}
+
+function compactCrawlNums(progress: {
+  fetched: number;
+  queued: number;
+  active?: number;
+}): string {
+  const active = progress.active ?? 0;
+  const pending = progress.queued + active;
+  if (pending > 0) return `${progress.fetched}/+${pending}`;
+  return String(progress.fetched);
 }

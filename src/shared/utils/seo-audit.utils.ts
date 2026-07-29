@@ -89,8 +89,9 @@ export function buildSeoAuditMetrics(
     if (prev) prev.count += 1;
     else byCode.set(issue.code, { code: issue.code, count: 1, severity: issue.severity });
   }
+  const severityRank = (s: string) => (s === 'error' ? 0 : s === 'warning' ? 1 : 2);
   const topIssueCodes = [...byCode.values()]
-    .sort((a, b) => b.count - a.count)
+    .sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || b.count - a.count)
     .slice(0, 12);
 
   const errors = issues.filter((i) => i.severity === 'error').length;

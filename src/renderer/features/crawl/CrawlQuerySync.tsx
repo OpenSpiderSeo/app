@@ -54,7 +54,11 @@ export function CrawlQuerySync() {
       const pages = queryClient.getQueryData<CrawledPage[]>(QueryKey.CrawlPages) ?? [];
       const issues = queryClient.getQueryData<SeoIssue[]>(QueryKey.CrawlIssues) ?? [];
       const issueTarget = progress.issueCount ?? issues.length;
-      return progress.fetched > pages.length || issueTarget > issues.length;
+      return (
+        progress.fetched > pages.length ||
+        issueTarget > issues.length ||
+        (pages.length > 0 && progress.fetched === 0)
+      );
     };
 
     const flushStateSync = () => {
@@ -156,11 +160,32 @@ export function CrawlQuerySync() {
       applyState(emptyCrawlState());
     }
 
+    // Poll while crawl is active — keeps queue/active honest if SSE stalls.
+    const pollId = window.setInterval(() => {
+      const progress = queryClient.getQueryData<CrawlState['progress']>(QueryKey.CrawlProgress);
+      const meta = queryClient.getQueryData<CrawlMeta>(QueryKey.CrawlMeta);
+      const status = progress?.status ?? 'idle';
+      const active =
+        Boolean(meta?.busy) ||
+        status === 'running' ||
+        status === 'pausing' ||
+        status === 'stopping' ||
+        status === 'paused';
+      if (!active) return;
+      void api.getCrawlState().then((state) => {
+        applyState(state);
+        syncBusy(normalizeCrawlState(state).progress.status);
+      }).catch(() => {
+        /* ignore */
+      });
+    }, 1000);
+
     return () => {
       offProgress();
       offPage();
       offFinished();
       offError();
+      window.clearInterval(pollId);
       if (flushTimer.current) clearTimeout(flushTimer.current);
       if (progressTimer.current) clearTimeout(progressTimer.current);
       if (stateSyncTimer.current) clearTimeout(stateSyncTimer.current);

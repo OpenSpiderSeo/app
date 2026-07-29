@@ -13,7 +13,14 @@ import type { LighthouseScores } from '../../../shared/types/audit.types';
 import { useI18n } from '../../i18n/I18nProvider';
 import { ChartCard } from './ChartCard';
 import { ChartEmpty } from './ChartEmpty';
-import { CHART, CHART_BAR_HEIGHT, barChartMargin, chartTooltipStyle } from './chart-theme';
+import {
+  CHART,
+  CHART_BAR_HEIGHT,
+  barChartMargin,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipStyle,
+} from './chart-theme';
 
 function scoreColor(score: number): string {
   if (score >= 90) return CHART.ok;
@@ -70,6 +77,8 @@ export const LighthouseScoresChart = memo(function LighthouseScoresChart({
           />
           <Tooltip
             contentStyle={chartTooltipStyle}
+            itemStyle={chartTooltipItemStyle}
+            labelStyle={chartTooltipLabelStyle}
             formatter={(value) => [
               typeof value === 'number' ? value : Number(value ?? 0),
               t('charts.lighthouse.score'),

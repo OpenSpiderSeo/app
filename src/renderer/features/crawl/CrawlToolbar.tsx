@@ -3,10 +3,9 @@ import { Button, Input, Label, TextField } from '@heroui/react';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n/translate';
 import { crawlProgressPct } from '../../../shared/utils/crawl-progress.utils';
+import { useProject } from '../projects/ProjectProvider';
 import { useCrawlActions, useCrawlProgress } from './use-crawl-queries';
 import { CrawlLiveStats } from './CrawlLiveStats';
-
-const DEFAULT_URL = 'https://example.com';
 
 interface CrawlUrlControlsProps {
   running: boolean;
@@ -23,8 +22,8 @@ const CrawlUrlControls = memo(function CrawlUrlControls({
   seedStartUrl,
 }: CrawlUrlControlsProps) {
   const { t } = useI18n();
-  const { start, stop, pause, resume, save, load } = useCrawlActions();
-  const [url, setUrl] = useState(seedStartUrl || DEFAULT_URL);
+  const { start, stop, pause, resume } = useCrawlActions();
+  const [url, setUrl] = useState(seedStartUrl ?? '');
   const lastSeed = useRef(seedStartUrl);
 
   useEffect(() => {
@@ -32,6 +31,13 @@ const CrawlUrlControls = memo(function CrawlUrlControls({
     lastSeed.current = seedStartUrl;
     setUrl(seedStartUrl);
   }, [seedStartUrl]);
+
+  // Project / progress loaded after first paint — fill empty field once.
+  useEffect(() => {
+    if (url.trim() || !seedStartUrl) return;
+    lastSeed.current = seedStartUrl;
+    setUrl(seedStartUrl);
+  }, [seedStartUrl, url]);
 
   return (
     <div className="flex flex-wrap items-end gap-3">
@@ -73,12 +79,6 @@ const CrawlUrlControls = memo(function CrawlUrlControls({
         onPress={() => stop.mutate()}
       >
         {t('crawl.stop')}
-      </Button>
-      <Button variant="ghost" onPress={() => save.mutate()} isDisabled={save.isPending}>
-        {t('crawl.save')}
-      </Button>
-      <Button variant="ghost" onPress={() => load.mutate()} isDisabled={load.isPending}>
-        {t('crawl.open')}
       </Button>
     </div>
   );
@@ -128,10 +128,16 @@ interface CrawlToolbarProps {
 }
 
 export const CrawlToolbar = memo(function CrawlToolbar({ busy }: CrawlToolbarProps) {
+  const { active } = useProject();
   const { data: progress = null } = useCrawlProgress();
   const status = progress?.status ?? 'idle';
   const paused = status === 'paused';
   const running = status === 'running' || status === 'pausing' || busy;
+  const projectUrl = active?.startUrl?.trim() || null;
+  const progressUrl = progress?.startUrl?.trim() || null;
+  // Idle → prefer project start URL (full domain), not example.com fallback.
+  const seedStartUrl =
+    running || paused || status === 'stopping' ? progressUrl || projectUrl : projectUrl || progressUrl;
 
   return (
     <div className="admin-panel flex flex-col gap-4 p-4">
@@ -139,7 +145,7 @@ export const CrawlToolbar = memo(function CrawlToolbar({ busy }: CrawlToolbarPro
         running={running}
         paused={paused}
         busy={busy}
-        seedStartUrl={progress?.startUrl ?? null}
+        seedStartUrl={seedStartUrl}
       />
       <CrawlProgressStrip
         progress={
@@ -147,6 +153,7 @@ export const CrawlToolbar = memo(function CrawlToolbar({ busy }: CrawlToolbarPro
             status,
             fetched: 0,
             queued: 0,
+            active: 0,
             errors: 0,
             startedAt: null,
             finishedAt: null,

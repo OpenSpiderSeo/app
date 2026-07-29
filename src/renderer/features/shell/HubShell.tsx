@@ -38,38 +38,38 @@ interface HubShellProps {
 export function HubShell({ hub, active, onChange, children }: HubShellProps) {
   const { t } = useI18n();
   const tabs = HUB_SECTIONS[hub];
-
-  if (tabs.length <= 1) {
-    return <>{children}</>;
-  }
+  const showTabs = tabs.length > 1;
 
   return (
-    <div className="hub-shell">
-      <header className="hub-shell__chrome">
-        <p className="admin-label">{t(HUB_LABEL[hub])}</p>
-        <div className="hub-shell__head-row">
-          <h1 className="hub-shell__title">{t(SECTION_LABEL[active])}</h1>
-          <div className="hub-shell__tabs" role="tablist" aria-label={t(HUB_LABEL[hub])}>
-            {tabs.map((id) => {
-              const isActive = id === active;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  data-testid={`hub-tab-${id}`}
-                  className={`hub-shell__tab ${isActive ? 'hub-shell__tab--active' : ''}`}
-                  onClick={() => onChange(id)}
-                >
-                  {t(SECTION_LABEL[id])}
-                </button>
-              );
-            })}
+    <div className={`hub-shell${showTabs ? '' : ' hub-shell--solo'}`}>
+      {showTabs ? (
+        <header className="hub-shell__chrome">
+          <p className="admin-label">{t(HUB_LABEL[hub])}</p>
+          <div className="hub-shell__head-row">
+            <h1 className="hub-shell__title">{t(SECTION_LABEL[active])}</h1>
+            <div className="hub-shell__tabs" role="tablist" aria-label={t(HUB_LABEL[hub])}>
+              {tabs.map((id) => {
+                const isActive = id === active;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    data-testid={`hub-tab-${id}`}
+                    className={`hub-shell__tab ${isActive ? 'hub-shell__tab--active' : ''}`}
+                    onClick={() => onChange(id)}
+                  >
+                    {t(SECTION_LABEL[id])}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </header>
-      <div className="hub-shell__body" role="tabpanel">
+        </header>
+      ) : null}
+      {/* Remount on section change so enter motion plays on every screen */}
+      <div className="hub-shell__body os-page-enter" role="tabpanel" key={active}>
         {children}
       </div>
     </div>

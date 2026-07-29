@@ -382,34 +382,8 @@ export const LabsPanel = memo(function LabsPanel({
             >
               {t('labs.indexnow.download')}
             </Button>
-            <Button
-              variant="primary"
-              isDisabled={busy || !indexNowKey.trim()}
-              onPress={async () => {
-                setBusy(true);
-                setMessage(null);
-                try {
-                  await window.openspider.saveSecrets({ indexNowKey: indexNowKey.trim() });
-                  const result = await window.openspider.submitIndexNow(indexNowKey.trim());
-                  setMessage(
-                    result.ok
-                      ? t('labs.indexnow.ok', {
-                          count: result.submitted,
-                          host: result.host,
-                          hint: result.keyFileHint,
-                        })
-                      : result.error ?? 'IndexNow failed',
-                  );
-                } catch (err) {
-                  setMessage(err instanceof Error ? err.message : String(err));
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              {t('labs.indexnow.cta')}
-            </Button>
           </div>
+          <p className="mt-2 text-sm text-[var(--os-muted)]">{t('feature.unavailable')} — IndexNow submit</p>
           {message && tab === 'indexnow' ? (
             <p className="mt-3 text-sm text-[var(--os-muted)]">{message}</p>
           ) : null}

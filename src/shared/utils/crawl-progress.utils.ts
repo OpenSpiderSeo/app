@@ -11,21 +11,16 @@ const IN_PROGRESS: ReadonlySet<CrawlStatusName> = new Set([
   CrawlStatus.Paused,
 ]);
 
-const ACTIVE: ReadonlySet<CrawlStatusName> = new Set([
-  CrawlStatus.Running,
-  CrawlStatus.Pausing,
-  CrawlStatus.Stopping,
-]);
-
 /**
  * Honest crawl bar progress:
  * - finished → 100%
  * - maxUrls set → fetched / maxUrls (cap 99% while not finished)
- * - unlimited + queue empty while running → indeterminate (in-flight workers)
- * - otherwise → fetched / (fetched + queued), cap 99% while not finished
+ * - otherwise → fetched / (fetched + queued + active), cap 99% while not finished
+ * - nothing known yet → indeterminate
  */
 export function computeCrawlProgressDisplay(progress: CrawlProgress): CrawlProgressDisplay {
   const { status, fetched, queued, maxUrls } = progress;
+  const active = Math.max(0, progress.active ?? 0);
 
   if (status === CrawlStatus.Finished) {
     return { mode: 'determinate', pct: 100 };
@@ -38,17 +33,15 @@ export function computeCrawlProgressDisplay(progress: CrawlProgress): CrawlProgr
     return { mode: 'determinate', pct: inProgress ? Math.min(99, raw) : raw };
   }
 
-  if (ACTIVE.has(status) && queued === 0) {
-    return { mode: 'indeterminate' };
-  }
-
-  const total = fetched + queued;
+  const pending = queued + active;
+  const total = fetched + pending;
   if (total === 0) {
     return { mode: 'indeterminate' };
   }
 
+  // Queue drained but workers still fetching → keep moving bar via active jobs.
   const raw = Math.round((fetched / total) * 100);
-  return { mode: 'determinate', pct: inProgress ? Math.min(99, raw) : raw };
+  return { mode: 'determinate', pct: inProgress ? Math.min(99, Math.max(1, raw)) : raw };
 }
 
 /** Percent for UI, or null when the bar should pulse (indeterminate). */

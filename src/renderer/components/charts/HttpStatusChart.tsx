@@ -15,7 +15,15 @@ import type { MessageKey } from '../../i18n/translate';
 import { ChartCard } from './ChartCard';
 import { ChartEmpty } from './ChartEmpty';
 import { httpStatusBuckets, httpStatusBucketsFromLocal } from './chart-data.utils';
-import { CHART, CHART_BAR_HEIGHT, HTTP_STATUS_COLORS, barChartMargin, chartTooltipStyle } from './chart-theme';
+import {
+  CHART,
+  CHART_BAR_HEIGHT,
+  HTTP_STATUS_COLORS,
+  barChartMargin,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipStyle,
+} from './chart-theme';
 
 export const HttpStatusChart = memo(function HttpStatusChart({
   pages,
@@ -68,6 +76,8 @@ export const HttpStatusChart = memo(function HttpStatusChart({
               />
               <Tooltip
                 contentStyle={chartTooltipStyle}
+                itemStyle={chartTooltipItemStyle}
+                labelStyle={chartTooltipLabelStyle}
                 formatter={(value) => [
                   typeof value === 'number' ? value : Number(value ?? 0),
                   t('charts.http.pages'),

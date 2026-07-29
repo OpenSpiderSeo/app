@@ -14,7 +14,13 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { ChartCard } from './ChartCard';
 import { ChartEmpty } from './ChartEmpty';
 import { healthTrendFromHistory } from './chart-data.utils';
-import { CHART, chartMargin, chartTooltipStyle } from './chart-theme';
+import {
+  CHART,
+  chartMargin,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipStyle,
+} from './chart-theme';
 
 export const HealthTrendChart = memo(function HealthTrendChart({
   history,
@@ -62,6 +68,8 @@ export const HealthTrendChart = memo(function HealthTrendChart({
             />
             <Tooltip
               contentStyle={chartTooltipStyle}
+              itemStyle={chartTooltipItemStyle}
+              labelStyle={chartTooltipLabelStyle}
               formatter={(value, name) => {
                 const n = typeof value === 'number' ? value : Number(value ?? 0);
                 if (name === 'health') return [n, t('charts.healthTrend.health')];

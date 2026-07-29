@@ -21,7 +21,7 @@ export default defineConfig({
   // Relative asset URLs work with Neutralino documentRoot /resources/ (avoid /resources/resources/ doubling).
   base: './',
   define: {
-    __APP_VERSION__: JSON.stringify('1.0.0'),
+    __APP_VERSION__: JSON.stringify('1.0.5'),
     __API_BASE__: JSON.stringify(process.env.VITE_API_BASE ?? 'http://127.0.0.1:7845'),
   },
   plugins: [react(), tailwindcss(), stripCrossOriginForNeutralino()],

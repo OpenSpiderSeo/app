@@ -14,7 +14,7 @@ import (
 	"github.com/openspider/openspider/internal/types"
 )
 
-const Version = "1.0.0"
+const Version = "1.0.5"
 
 type Server struct {
 	engine          *crawl.Engine

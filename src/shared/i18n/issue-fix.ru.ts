@@ -6,8 +6,10 @@ export const issueFixRu = {
   'issues.fix.found': 'Что нашли',
   'issues.fix.method': 'Как нашли',
   'issues.fix.better': 'Как лучше сделать',
-  'issues.fix.pick': 'Выберите строку — справа появится инструкция по этой проблеме.',
+  'issues.fix.pick': 'Выберите строку в «Списке» — здесь появится инструкция по этой проблеме.',
   'issues.fix.close': 'Закрыть',
+  'issues.fix.backToList': 'К списку',
+  'issues.fix.openList': 'Открыть список',
 
   'fix.http.4xx.title': 'Ошибка HTTP 4xx',
   'fix.http.4xx.why':

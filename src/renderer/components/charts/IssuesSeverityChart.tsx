@@ -14,7 +14,13 @@ import { ChartEmpty } from './ChartEmpty';
 import { ChartLegend } from './ChartLegend';
 import { DonutChartLayout } from './DonutChartLayout';
 import { issuesBySeverity } from './chart-data.utils';
-import { CHART, SEVERITY_COLORS, chartTooltipStyle } from './chart-theme';
+import {
+  CHART,
+  SEVERITY_COLORS,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipStyle,
+} from './chart-theme';
 
 export const IssuesSeverityChart = memo(function IssuesSeverityChart({
   issues,
@@ -74,6 +80,8 @@ export const IssuesSeverityChart = memo(function IssuesSeverityChart({
                 </Pie>
                 <Tooltip
                   contentStyle={chartTooltipStyle}
+                  itemStyle={chartTooltipItemStyle}
+                  labelStyle={chartTooltipLabelStyle}
                   formatter={(value, _name, item) => [
                     typeof value === 'number' ? value : Number(value ?? 0),
                     (item?.payload as { label?: string } | undefined)?.label ?? '',

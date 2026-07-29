@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import { Button } from '@heroui/react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { SeoReport } from '../../../shared/types/report.types';
 import { QueryKey } from '../../lib/query-keys.const';
@@ -12,8 +12,7 @@ export const ReportsPanel = memo(function ReportsPanel({
 }: {
   onNavigate?: (section: import('../../app/routes.const').NavSectionName) => void;
 } = {}) {
-  const { t, locale } = useI18n();
-  const queryClient = useQueryClient();
+  const { t } = useI18n();
   const { active } = useProject();
   const [viewId, setViewId] = useState<'current' | string>('current');
   const [snapshot, setSnapshot] = useState<SeoReport | null>(null);
@@ -38,8 +37,6 @@ export const ReportsPanel = memo(function ReportsPanel({
       })),
     [items, t],
   );
-
-  const exportId = viewId === 'current' ? undefined : viewId;
 
   useEffect(() => {
     let cancelled = false;
@@ -78,29 +75,6 @@ export const ReportsPanel = memo(function ReportsPanel({
           </select>
         </label>
         <Button
-          variant="primary"
-          onPress={async () => {
-            const result = await window.openspider.exportReportPdf({ id: exportId, locale });
-            if ('error' in result) {
-              if (result.error !== 'Cancelled') setMessage(result.error);
-              return;
-            }
-            setMessage(t('reports.pdf.saved', { path: result.path }));
-          }}
-        >
-          {t('reports.pdf.cta')}
-        </Button>
-        <Button
-          variant="secondary"
-          onPress={async () => {
-            const result = await window.openspider.exportReport(exportId);
-            if ('error' in result) setMessage(result.error);
-            else setMessage(t('reports.saved', { path: result.path }));
-          }}
-        >
-          {t('reports.export.cta')}
-        </Button>
-        <Button
           variant="secondary"
           onPress={async () => {
             const [pages, issues] = await Promise.all([
@@ -119,20 +93,6 @@ export const ReportsPanel = memo(function ReportsPanel({
           }}
         >
           {t('reports.csv.cta')}
-        </Button>
-        <Button
-          variant="secondary"
-          onPress={async () => {
-            const result = await window.openspider.importReport();
-            if (!result.ok) {
-              if (result.error !== 'Cancelled') setMessage(result.error);
-              return;
-            }
-            setMessage(t('reports.imported'));
-            void queryClient.invalidateQueries({ queryKey: ['history'] });
-          }}
-        >
-          {t('reports.import.cta')}
         </Button>
       </div>
 

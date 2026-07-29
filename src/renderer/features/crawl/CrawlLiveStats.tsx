@@ -6,6 +6,7 @@ import {
   crawlIssueCount,
   crawlLimitLabel,
   crawlProgressLabel,
+  formatCrawlFetchStats,
 } from '../../../shared/utils/crawl-live-stats.utils';
 
 interface CrawlLiveStatsProps {
@@ -25,10 +26,17 @@ export const CrawlLiveStats = memo(function CrawlLiveStats({
   className = '',
 }: CrawlLiveStatsProps) {
   const { t } = useI18n();
-  const { status, fetched, queued, errors, startUrl } = progress;
+  const { status, startUrl } = progress;
   const statusKey = `crawl.status.${status}` as MessageKey;
   const limits = crawlLimitLabel(progress);
   const issues = crawlIssueCount(progress);
+  const pctLabel = crawlProgressLabel(progress);
+  const fetchLine = formatCrawlFetchStats(progress, {
+    fetched: t('crawl.stats.fetched'),
+    queue: t('crawl.stats.queue'),
+    active: t('crawl.stats.active'),
+    errors: t('crawl.stats.errors'),
+  });
 
   return (
     <div className={`crawl-live-stats ${className}`.trim()}>
@@ -38,9 +46,7 @@ export const CrawlLiveStats = memo(function CrawlLiveStats({
             {t(statusKey)}
           </span>
         ) : null}
-        <span className="crawl-live-stats__nums font-mono text-xs">
-          {t('crawl.fetched', { fetched, queued, errors })}
-        </span>
+        <span className="crawl-live-stats__nums font-mono text-xs">{fetchLine}</span>
         {limits ? (
           <span className="crawl-live-stats__limits font-mono text-xs opacity-80">{limits}</span>
         ) : null}
@@ -49,9 +55,9 @@ export const CrawlLiveStats = memo(function CrawlLiveStats({
             {t('crawl.stats.issues', { count: issues })}
           </span>
         ) : null}
-        {!compact ? (
+        {!compact && pctLabel ? (
           <span className="crawl-live-stats__pct font-mono text-xs font-semibold text-[var(--os-accent)]">
-            {crawlProgressLabel(progress)}
+            {pctLabel}
           </span>
         ) : null}
       </div>

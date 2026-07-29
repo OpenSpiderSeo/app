@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const Version = "1.0.0"
+const Version = "1.0.5"
 
 type Config struct {
 	NlPort         string `json:"nlPort"`

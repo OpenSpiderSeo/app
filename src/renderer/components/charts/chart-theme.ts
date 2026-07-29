@@ -40,5 +40,17 @@ export const chartTooltipStyle = {
   border: `1px solid ${CHART.tooltipBorder}`,
   borderRadius: 8,
   fontSize: 12,
-  color: '#e5e7eb',
+  color: '#e8e6e3',
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
+} as const;
+
+/** Recharts paints item rows with series fill (can be unreadable on dark tooltip). */
+export const chartTooltipItemStyle = {
+  color: '#e8e6e3',
+} as const;
+
+export const chartTooltipLabelStyle = {
+  color: '#f5f3f0',
+  fontWeight: 600,
+  marginBottom: 4,
 } as const;

@@ -223,6 +223,8 @@ export interface SeoIssue {
 export interface CrawlProgress {
   status: CrawlStatusName;
   queued: number;
+  /** In-flight fetch workers (frontier drained but jobs still running). */
+  active?: number;
   fetched: number;
   errors: number;
   /** Configured URL cap for the active crawl; 0/omit = unlimited. */

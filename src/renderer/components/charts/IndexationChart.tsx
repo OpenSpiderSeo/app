@@ -14,7 +14,12 @@ import { ChartEmpty } from './ChartEmpty';
 import { ChartLegend } from './ChartLegend';
 import { DonutChartLayout } from './DonutChartLayout';
 import { indexationSplit } from './chart-data.utils';
-import { CHART, chartTooltipStyle } from './chart-theme';
+import {
+  CHART,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipStyle,
+} from './chart-theme';
 
 const INDEXATION_COLORS: Record<string, string> = {
   indexable: CHART.ok,
@@ -76,6 +81,8 @@ export const IndexationChart = memo(function IndexationChart({
                 </Pie>
                 <Tooltip
                   contentStyle={chartTooltipStyle}
+                  itemStyle={chartTooltipItemStyle}
+                  labelStyle={chartTooltipLabelStyle}
                   formatter={(value, _name, item) => [
                     typeof value === 'number' ? value : Number(value ?? 0),
                     (item?.payload as { label?: string } | undefined)?.label ?? '',

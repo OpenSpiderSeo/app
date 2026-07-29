@@ -13,7 +13,13 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { ChartCard } from './ChartCard';
 import { ChartEmpty } from './ChartEmpty';
 import { rankHistoryByKeyword } from './chart-data.utils';
-import { CHART, chartMargin, chartTooltipStyle } from './chart-theme';
+import {
+  CHART,
+  chartMargin,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipStyle,
+} from './chart-theme';
 
 const LINE_COLORS = [CHART.accent, '#60a5fa', CHART.ok, CHART.warn, '#a78bfa'];
 
@@ -78,6 +84,8 @@ export const RankHistoryChart = memo(function RankHistoryChart({
             />
             <Tooltip
               contentStyle={chartTooltipStyle}
+              itemStyle={chartTooltipItemStyle}
+              labelStyle={chartTooltipLabelStyle}
               formatter={(value, name) => {
                 const rank = typeof value === 'number' ? value : null;
                 return [rank != null ? `#${rank}` : '—', String(name ?? '')];
