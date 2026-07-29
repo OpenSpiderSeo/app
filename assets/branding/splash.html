@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenSpider</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #080706;
+        color: #f5f5f4;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .splash {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.25rem;
+        width: 100%;
+        height: 100%;
+        background:
+          radial-gradient(ellipse 80% 60% at 50% 40%, rgba(225, 29, 46, 0.14), transparent 70%),
+          #080706;
+      }
+
+      .splash__mark {
+        width: 88px;
+        height: 88px;
+        filter: drop-shadow(0 0 28px rgba(225, 29, 46, 0.35));
+        animation: pulse 2.4s ease-in-out infinite;
+      }
+
+      .splash__wordmark {
+        font-size: 1.65rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .splash__wordmark span {
+        color: #e11d2e;
+      }
+
+      .splash__tagline {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.48);
+      }
+
+      .splash__bar {
+        width: 120px;
+        height: 3px;
+        margin-top: 0.5rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .splash__bar::after {
+        content: "";
+        display: block;
+        width: 40%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #c41828, #e11d2e);
+        animation: slide 1.2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.04);
+          opacity: 0.92;
+        }
+      }
+
+      @keyframes slide {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(320%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="splash">
+      <svg
+        class="splash__mark"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        fill="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="bg" x1="64" y1="448" x2="448" y2="64" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#11100e" />
+            <stop offset="1" stop-color="#1a1816" />
+          </linearGradient>
+          <radialGradient
+            id="glow"
+            cx="0"
+            cy="0"
+            r="1"
+            gradientUnits="userSpaceOnUse"
+            gradientTransform="translate(256 256) rotate(90) scale(220)"
+          >
+            <stop stop-color="#e11d2e" stop-opacity="0.22" />
+            <stop offset="1" stop-color="#e11d2e" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="512" height="512" rx="112" fill="url(#bg)" />
+        <rect width="512" height="512" rx="112" fill="url(#glow)" />
+        <g transform="translate(256 256)" stroke="#f5f5f4" stroke-linecap="round">
+          <circle r="232" stroke-width="10" opacity="0.28" />
+          <circle r="144" stroke-width="8" opacity="0.42" />
+          <circle r="64" stroke-width="7" />
+          <circle r="20" fill="#e11d2e" stroke="none" />
+          <g stroke-width="7" opacity="0.92">
+            <line x1="0" y1="0" x2="0" y2="-224" />
+            <line x1="0" y1="0" x2="158" y2="-158" />
+            <line x1="0" y1="0" x2="224" y2="0" />
+            <line x1="0" y1="0" x2="158" y2="158" />
+            <line x1="0" y1="0" x2="0" y2="224" />
+            <line x1="0" y1="0" x2="-158" y2="158" />
+            <line x1="0" y1="0" x2="-224" y2="0" />
+            <line x1="0" y1="0" x2="-158" y2="-158" />
+          </g>
+        </g>
+      </svg>
+      <h1 class="splash__wordmark">Open<span>Spider</span></h1>
+      <p class="splash__tagline">SEO spider &amp; audit hub</p>
+      <div class="splash__bar" aria-hidden="true"></div>
+    </div>
+  </body>
+</html>

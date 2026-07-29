@@ -1,0 +1,142 @@
+name: Release v1.0 (Neutralino + Go)
+
+on:
+  push:
+    tags:
+      - 'v1.0.0'
+      - 'v1.0.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            artifact: openspider-linux-x64
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            artifact: openspider-macos-x64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            artifact: openspider-macos-arm64
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            artifact: openspider-windows-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync version from tag (inspector off)
+        run: node scripts/sync-version-from-tag.mjs
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      - name: Build Go sidecar
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: node scripts/build-go.mjs
+
+      - name: Build UI
+        run: pnpm --dir web build
+
+      - name: Stage Neutralino bundle
+        shell: bash
+        run: |
+          node scripts/stage-ext.mjs
+          node scripts/stage-ui.mjs
+          mkdir -p neutralino/extensions
+          cd neutralino
+          neu_update() {
+            if [ -f ../node_modules/@neutralinojs/neu/bin/neu.js ]; then
+              node ../node_modules/@neutralinojs/neu/bin/neu.js "$@"
+            else
+              npx @neutralinojs/neu "$@"
+            fi
+          }
+          for attempt in 1 2 3; do
+            neu_update update && break
+            echo "neu update attempt $attempt failed, retrying..."
+            sleep 5
+          done
+          neu_update build --release
+          test -d dist/openspider || (echo "neu build produced no bundle dir" && ls -laR dist/ && exit 1)
+          ls -la dist/openspider/
+
+      - name: Package single-platform ZIP
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: node scripts/package-release.mjs ${{ matrix.artifact }}
+
+      - name: Verify ZIP contents
+        shell: bash
+        run: |
+          ZIP="dist/release/${{ matrix.artifact }}.zip"
+          test -f "$ZIP"
+          echo "=== $ZIP ==="
+          unzip -l "$ZIP"
+          COUNT=$(unzip -Z1 "$ZIP" | grep -cE '^openspider-(linux|mac)_|^openspider-win_.*\.exe$' || true)
+          if [ "$COUNT" -ne 1 ]; then
+            echo "Expected exactly 1 Neutralino binary, found $COUNT"
+            exit 1
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/release/${{ matrix.artifact }}.zip
+
+  release:
+    needs: build
+    if: ${{ !cancelled() && contains(needs.build.result, 'success') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Prepare release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node scripts/extract-changelog.mjs "$VERSION" > release-body.md
+          echo "--- release body ---"
+          cat release-body.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-body.md
+          files: artifacts/*.zip

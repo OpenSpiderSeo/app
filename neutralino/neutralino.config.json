@@ -1,0 +1,49 @@
+{
+  "applicationId": "com.openspider.desktop",
+  "version": "1.0.0",
+  "defaultMode": "window",
+  "documentRoot": "/resources/",
+  "url": "/",
+  "enableServer": true,
+  "enableNativeAPI": true,
+  "enableExtensions": true,
+  "exportAuthInfo": true,
+  "tokenSecurity": "one-time",
+  "autoReloadExclude": "(^|[\\\\/])bin([\\\\/]|$)|\\\\.log$|resources\\\\/bin\\\\/|extensions\\\\/go\\\\/",
+  "nativeAllowList": [
+    "app.*",
+    "os.*",
+    "filesystem.*",
+    "window.*",
+    "events.*",
+    "extensions.*",
+    "debug.log"
+  ],
+  "modes": {
+    "window": {
+      "title": "OpenSpider",
+      "width": 1400,
+      "height": 900,
+      "minWidth": 960,
+      "minHeight": 640,
+      "icon": "/resources/icons/appIcon.png",
+      "enableInspector": false
+    }
+  },
+  "cli": {
+    "binaryName": "openspider",
+    "resourcesPath": "/resources/",
+    "extensionsPath": "/extensions/",
+    "clientLibrary": "/resources/js/neutralino.js",
+    "binaryVersion": "6.3.0",
+    "clientVersion": "6.3.0"
+  },
+  "extensions": [
+    {
+      "id": "extGo",
+      "commandDarwin": "\"${NL_PATH}/extensions/go/openspider\" \"${NL_PATH}\"",
+      "commandLinux": "\"${NL_PATH}/extensions/go/openspider\" \"${NL_PATH}\"",
+      "commandWindows": "\"${NL_PATH}\\extensions\\go\\openspider.exe\" \"${NL_PATH}\""
+    }
+  ]
+}

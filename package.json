@@ -1,0 +1,58 @@
+{
+  "name": "openspider",
+  "productName": "OpenSpider",
+  "version": "1.0.0",
+  "description": "Open-source desktop SEO spider — Neutralino + Go engine, local-first, MIT.",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "node scripts/build-go.mjs && node scripts/dev.mjs",
+    "dev:go": "node scripts/build-go.mjs && go/bin/openspider -addr :7845",
+    "dev:ui": "pnpm --dir web dev",
+    "neu:dev": "node scripts/neu-dev.mjs",
+    "neu:run": "pnpm neu:dev",
+    "dev:desktop": "pnpm neu:dev",
+    "stage:ext": "node scripts/stage-ext.mjs",
+    "stage:bin": "node scripts/stage-ext.mjs",
+    "stage:ui": "node scripts/stage-ui.mjs",
+    "neu:build": "node scripts/neu-build.mjs",
+    "release": "pnpm neu:build",
+    "build:go": "node scripts/build-go.mjs",
+    "build:ui": "pnpm --dir web build",
+    "build": "pnpm build:go && pnpm build:ui && node scripts/stage-ext.mjs && node scripts/stage-ui.mjs",
+    "typecheck": "pnpm --dir web typecheck",
+    "test:go": "cd go && go test ./...",
+    "start": "pnpm neu:dev",
+    "icons:generate": "node scripts/generate-brand-icons.mjs",
+    "lint": "eslint --ext .ts,.tsx src web/src scripts"
+  },
+  "keywords": [
+    "seo",
+    "crawler",
+    "neutralino",
+    "golang",
+    "opensource",
+    "screaming-frog-alternative",
+    "search-console",
+    "yandex-metrika"
+  ],
+  "author": {
+    "name": "OpenSpider Contributors"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenSpiderSeo/app.git"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "^10.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.32.0",
+    "typescript": "~5.8.3"
+  }
+}

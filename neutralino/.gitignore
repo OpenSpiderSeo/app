@@ -1,0 +1,11 @@
+# neutralino/bin/ — platform binary from `neu update` (do not commit)
+bin/
+# Go extension binary (built by scripts/stage-ext.mjs)
+extensions/go/openspider
+extensions/go/openspider.exe
+.dev-inspector
+# staged UI (index.html + assets) lives under resources/ — do not commit
+resources/index.html
+resources/assets/
+# neu build output
+dist/
