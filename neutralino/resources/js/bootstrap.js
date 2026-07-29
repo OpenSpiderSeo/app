@@ -8,9 +8,7 @@
   Neutralino.init();
 
   Neutralino.events.on('ready', () => {
-    fetch('./.dev-inspector')
-      .then(() => console.info('[OpenSpider dev] DevTools: F12 or Ctrl+Shift+I'))
-      .catch(() => {});
+    /* DevTools only when neu:dev wrote resources/.dev-inspector (packaged builds omit it). */
   });
 
   Neutralino.events.on('exit', () => {

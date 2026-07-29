@@ -7,6 +7,7 @@ import type { ProjectMemoryNote, SeoProject } from '@shared/types/project.types'
 import type { FullAuditResult, LighthouseScores, LocalMetricsSnapshot, SerpReport } from '@shared/types/audit.types';
 import type { LlmsTxtProbe } from '@shared/types/llms.types';
 import type { CreateProjectInput, UpdateProjectInput } from '@shared/types/ipc.types';
+import type { OutboundLinksCheckResult } from '@shared/types/labs-tools.types';
 import { connectCrawlEvents } from './sse';
 import { apiGet, apiPost, initExtensionTransport } from './transport';
 
@@ -202,16 +203,27 @@ export function createOpenSpiderApi(): OpenSpiderApi {
       return { urls: res.urls ?? [], count: res.urlCount ?? 0 };
     },
 
-    checkOutboundLinks: async () => {
-      const res = await apiPost<{ ok: boolean; issues?: unknown[]; error?: string }>(
-        '/api/labs/outbound',
-        {},
-      );
+    checkOutboundLinks: async (input) => {
+      const res = await apiPost<{
+        ok: boolean;
+        broken?: OutboundLinksCheckResult['broken'];
+        checked?: number;
+        skipped?: number;
+        issuesAdded?: number;
+        error?: string;
+      }>('/api/labs/outbound', {
+        externalOnly: input.externalOnly ?? true,
+        includeInternalUncrawled: input.includeInternalUncrawled ?? false,
+        maxLinks: input.maxLinks,
+        concurrency: input.concurrency,
+        userAgent: input.userAgent,
+        requestTimeoutMs: input.requestTimeoutMs,
+      });
       return {
-        broken: [],
-        checked: 0,
-        skipped: 0,
-        issuesAdded: res.issues?.length ?? 0,
+        broken: res.broken ?? [],
+        checked: res.checked ?? 0,
+        skipped: res.skipped ?? 0,
+        issuesAdded: res.issuesAdded ?? 0,
         error: res.error,
       };
     },
