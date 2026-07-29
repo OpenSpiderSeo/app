@@ -1,9 +1,9 @@
 {
   "applicationId": "com.openspider.desktop",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "defaultMode": "window",
   "documentRoot": "/resources/",
-  "url": "/",
+  "url": "/index.html",
   "enableServer": true,
   "enableNativeAPI": true,
   "enableExtensions": true,
@@ -27,7 +27,7 @@
       "minWidth": 960,
       "minHeight": 640,
       "icon": "/resources/icons/appIcon.png",
-      "enableInspector": false
+      "enableInspector": true
     }
   },
   "cli": {

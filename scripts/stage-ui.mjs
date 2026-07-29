@@ -33,28 +33,53 @@ if (fs.existsSync(legacyNext)) {
   console.log('Removed legacy neutralino/resources/_next');
 }
 
-/** Neutralino WebKitGTK rejects module/CSS tags with crossorigin (no ACAO headers). */
+/**
+ * Patch Vite index for Neutralino documentRoot=/resources/:
+ * - absolute /js and /assets paths (stable in asar)
+ * - classic <script> (IIFE build) — no type=module
+ * - Neutralino + GoExtension scripts before the app bundle
+ */
 function patchIndexHtmlForNeutralino(html) {
-  let out = html
-    .replace(/\s+crossorigin(="[^"]*")?/g, '')
-    .replace(/src="\/js\//g, 'src="./js/')
-    .replace(/href="\/js\//g, 'href="./js/');
+  let out = html.replace(/\s+crossorigin(="[^"]*")?/g, '');
+
+  out = out
+    .replace(/(src|href)="\.\/(assets|js)\//g, '$1="/$2/')
+    .replace(/<script type="module"\s+/g, '<script ')
+    .replace(/<script type="module"/g, '<script');
 
   const nlScripts = [
-    '<script src="./js/neutralino.js"></script>',
-    '<script src="./js/go-extension.js"></script>',
-    '<script src="./js/bootstrap.js"></script>',
+    '<script src="/js/neutralino.js"></script>',
+    '<script src="/js/go-extension.js"></script>',
+    '<script src="/js/bootstrap.js"></script>',
   ].join('\n    ');
 
-  // Vite puts the module bundle in <head>; it must run after GoExtension is defined.
-  out = out.replace(/<script src="\.\/js\/neutralino\.js"><\/script>\s*/g, '');
-  out = out.replace(/<script src="\.\/js\/go-extension\.js"><\/script>\s*/g, '');
-  out = out.replace(/<script src="\.\/js\/bootstrap\.js"><\/script>\s*/g, '');
+  for (const name of ['neutralino.js', 'go-extension.js', 'bootstrap.js']) {
+    out = out.replace(new RegExp(`\\s*<script src="/(?:\\./)?js/${name}"><\\/script>`, 'g'), '');
+  }
 
-  if (out.includes('<script type="module"')) {
-    out = out.replace('<script type="module"', `${nlScripts}\n    <script type="module"`);
+  // Prefer injecting NL scripts right before the Vite app bundle.
+  if (/<script[^>]*src="\/assets\/[^"]+\.js"/i.test(out)) {
+    out = out.replace(
+      /(<script[^>]*src="\/assets\/[^"]+\.js"[^>]*><\/script>)/i,
+      `${nlScripts}\n    $1`,
+    );
   } else {
     out = out.replace('</body>', `    ${nlScripts}\n  </body>`);
+  }
+
+  // App bundle should defer so Neutralino/GoExtension globals exist first.
+  out = out.replace(
+    /<script(\s+)src="(\/assets\/[^"]+\.js)"/i,
+    '<script$1defer src="$2"',
+  );
+
+  if (!out.includes('OpenSpider')) {
+    console.error('Patched index.html missing OpenSpider title — refusing to stage');
+    process.exit(1);
+  }
+  if (/Neutralinojs sample app|id="neutralinoapp"/i.test(out)) {
+    console.error('Refusing to stage Neutralino sample template');
+    process.exit(1);
   }
 
   return out;
@@ -69,6 +94,12 @@ if (fs.existsSync(assetsSrc)) {
   fs.cpSync(assetsSrc, assetsDest, { recursive: true });
 }
 
+const jsFiles = fs.readdirSync(path.join(src, 'assets')).filter((f) => f.endsWith('.js'));
+if (jsFiles.length < 1) {
+  console.error('No JS assets in web/dist/assets — UI build incomplete');
+  process.exit(1);
+}
+
 /** Keep Neutralino client scripts (neutralino.js, go-extension.js, bootstrap.js). */
 const jsDest = path.join(dest, 'js');
 fs.mkdirSync(jsDest, { recursive: true });
@@ -79,4 +110,4 @@ for (const name of ['neutralino.js', 'neutralino.d.ts', 'go-extension.js', 'boot
   }
 }
 
-console.log(`Staged UI → ${dest} (index.html + assets/ + js/)`);
+console.log(`Staged UI → ${dest} (index.html + assets/ + js/), app bundles: ${jsFiles.join(', ')}`);

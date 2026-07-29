@@ -38,5 +38,18 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    // Neutralino WebView + resources.neu (asar) is unreliable with native ES modules.
+    // Single IIFE bundle loads as a classic <script> in packaged builds.
+    cssCodeSplit: false,
+    rollupOptions: {
+      output: {
+        format: 'iife',
+        name: 'OpenSpiderApp',
+        inlineDynamicImports: true,
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
+    },
   },
 });

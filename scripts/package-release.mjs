@@ -101,6 +101,19 @@ if (fs.existsSync(extensionsDir)) {
   fs.mkdirSync(path.join(staging, 'extensions'), { recursive: true });
 }
 
+fs.writeFileSync(
+  path.join(staging, 'README.txt'),
+  [
+    'OpenSpider — extract ALL files into one folder, then run:',
+    '',
+    `  ${neuBinary}`,
+    '',
+    'Keep resources.neu and extensions/ next to the executable.',
+    'Do not run the .exe/.bin from inside the ZIP preview.',
+    '',
+  ].join('\n'),
+);
+
 const stagedHosts = fs.readdirSync(staging).filter((n) => ALL_NEU_BINARIES.has(n));
 if (stagedHosts.length !== 1 || stagedHosts[0] !== neuBinary) {
   console.error(`Staging host binaries invalid: ${stagedHosts.join(', ') || '(none)'}`);
