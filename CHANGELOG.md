@@ -26,6 +26,7 @@ First clean public release of the **Neutralino.js + Vite/React/TS + Go extension
 - PageSpeed HTTP 429 — fallback to local-lab scores; full-audit uses the same path as dedicated PSI.
 - Language switch persists across Neutralino restarts.
 - Packaged builds ship with `enableInspector: false` (DevTools only in `pnpm neu:dev`).
+- Release assets are **four separate ZIPs** (linux / macos-x64 / macos-arm64 / windows) — never one fat archive with all Neutralino host binaries.
 
 ### Notes
 

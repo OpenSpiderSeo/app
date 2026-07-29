@@ -14,9 +14,17 @@ stageBinaryFromGoBin('openspider-ext', dest, {
 });
 console.log(`Staged Go extension → ${dest}`);
 
-/** Optional: keep HTTP sidecar in resources/bin for headless smoke / browser dev */
-const binDestDir = path.join(neuDir, 'resources', 'bin');
-fs.mkdirSync(binDestDir, { recursive: true });
-const sidecarDest = path.join(binDestDir, goBinaryFileName('openspider'));
-stageBinaryFromGoBin('openspider', sidecarDest);
-console.log(`Staged HTTP sidecar (dev fallback) → ${sidecarDest}`);
+/** Optional: keep HTTP sidecar in resources/bin for headless smoke / browser dev (not in CI release). */
+if (!process.env.GITHUB_ACTIONS && process.env.OPENSPIDER_RELEASE !== '1') {
+  const binDestDir = path.join(neuDir, 'resources', 'bin');
+  fs.mkdirSync(binDestDir, { recursive: true });
+  const sidecarDest = path.join(binDestDir, goBinaryFileName('openspider'));
+  stageBinaryFromGoBin('openspider', sidecarDest);
+  console.log(`Staged HTTP sidecar (dev fallback) → ${sidecarDest}`);
+} else {
+  const binDestDir = path.join(neuDir, 'resources', 'bin');
+  if (fs.existsSync(binDestDir)) {
+    fs.rmSync(binDestDir, { recursive: true, force: true });
+    console.log('Skipped HTTP sidecar staging (release build)');
+  }
+}
