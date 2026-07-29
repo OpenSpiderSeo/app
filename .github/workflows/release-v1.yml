@@ -75,28 +75,20 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: |
           mkdir -p neutralino/extensions
-          cd neutralino
-          neu_update() {
-            if [ -f ../node_modules/@neutralinojs/neu/bin/neu.js ]; then
-              node ../node_modules/@neutralinojs/neu/bin/neu.js "$@"
-            else
-              npx @neutralinojs/neu "$@"
-            fi
-          }
-          for attempt in 1 2 3; do
-            neu_update update && break
-            echo "neu update attempt $attempt failed, retrying..."
-            sleep 5
-          done
-          cd ..
-          # Stage AFTER neu update so client/bin refresh cannot clobber UI.
+          # Fail hard if host binary cannot be obtained (neu update often downloads a corrupt zip).
+          node scripts/ensure-neutralino-binaries.mjs
+          # Stage AFTER binaries so client/bin refresh cannot clobber UI.
           node scripts/stage-ext.mjs
           node scripts/stage-ui.mjs
           test -f neutralino/resources/index.html
           grep -q '<title>OpenSpider</title>' neutralino/resources/index.html
           ! grep -qi 'neutralinoapp\|Neutralinojs sample' neutralino/resources/index.html
           cd neutralino
-          neu_update build --release
+          if [ -f ../node_modules/@neutralinojs/neu/bin/neu.js ]; then
+            node ../node_modules/@neutralinojs/neu/bin/neu.js build --release
+          else
+            npx @neutralinojs/neu build --release
+          fi
           test -d dist/openspider || (echo "neu build produced no bundle dir" && ls -laR dist/ && exit 1)
           echo "=== neu dist (before prune) ==="
           ls -la dist/openspider/
@@ -178,6 +170,8 @@ jobs:
       - name: Create GitHub Release (4 per-OS ZIPs)
         uses: softprops/action-gh-release@v2
         with:
+          draft: false
+          make_latest: true
           body_path: release-body.md
           fail_on_unmatched_files: true
           files: |

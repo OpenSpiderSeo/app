@@ -82,6 +82,21 @@ function pruneForeignNeuBinaries() {
 
 pruneForeignNeuBinaries();
 
+/** If neu build skipped copy (empty bin/), salvage from neutralino/bin/. */
+if (!fs.existsSync(neuBinPath)) {
+  const rawName = neuBinary.replace(/^openspider/, 'neutralino');
+  const src = path.join(root, 'neutralino', 'bin', rawName);
+  if (fs.existsSync(src) && fs.statSync(src).size > 100_000) {
+    console.warn(`Host missing in dist — copying from bin/${rawName}`);
+    fs.copyFileSync(src, neuBinPath);
+    try {
+      fs.chmodSync(neuBinPath, 0o755);
+    } catch {
+      /* windows */
+    }
+  }
+}
+
 for (const p of [neuBinPath, resourcesNeu]) {
   if (!fs.existsSync(p)) {
     console.error(`Missing required file: ${p}`);
