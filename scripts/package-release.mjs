@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 /**
- * Slim Neutralino release ZIP: neu bundles ALL platform binaries — ship only the target.
+ * Slim Neutralino release package: neu bundles ALL platform binaries — ship only the target.
  * Usage: GOOS=linux GOARCH=amd64 node scripts/package-release.mjs <artifact-name>
- * Output: dist/release/<artifact-name>.zip
+ *
+ * Output:
+ *   dist/release/<artifact-name>.zip
+ *   Windows also: dist/release/OpenSpider-windows-x64.exe  (self-extracting portable)
  *
  * Guarantees: exactly one Neutralino host binary + extensions/ + resources.neu.
  * Never packs linux+mac+win together.
@@ -108,7 +111,10 @@ for (const p of [neuBinPath, resourcesNeu]) {
 
 fs.rmSync(staging, { recursive: true, force: true });
 fs.mkdirSync(staging, { recursive: true });
-fs.copyFileSync(neuBinPath, path.join(staging, neuBinary));
+
+/** Windows: ship as OpenSpider.exe so Explorer / Start Menu label is clear. */
+const stagedHostName = goos === 'windows' ? 'OpenSpider.exe' : neuBinary;
+fs.copyFileSync(neuBinPath, path.join(staging, stagedHostName));
 fs.copyFileSync(resourcesNeu, path.join(staging, 'resources.neu'));
 if (fs.existsSync(extensionsDir)) {
   fs.cpSync(extensionsDir, path.join(staging, 'extensions'), { recursive: true });
@@ -121,16 +127,20 @@ fs.writeFileSync(
   [
     'OpenSpider — extract ALL files into one folder, then run:',
     '',
-    `  ${neuBinary}`,
+    `  ${stagedHostName}`,
     '',
     'Keep resources.neu and extensions/ next to the executable.',
-    'Do not run the .exe/.bin from inside the ZIP preview.',
+    'Do NOT run the .exe from inside a ZIP preview — that shows the blank Neutralino window.',
+    '',
+    'Preferred on Windows: download OpenSpider-windows-x64.exe (self-extracting) from the GitHub Release.',
     '',
   ].join('\n'),
 );
 
-const stagedHosts = fs.readdirSync(staging).filter((n) => ALL_NEU_BINARIES.has(n));
-if (stagedHosts.length !== 1 || stagedHosts[0] !== neuBinary) {
+const stagedHosts = fs
+  .readdirSync(staging)
+  .filter((n) => ALL_NEU_BINARIES.has(n) || n === 'OpenSpider.exe');
+if (stagedHosts.length !== 1) {
   console.error(`Staging host binaries invalid: ${stagedHosts.join(', ') || '(none)'}`);
   process.exit(1);
 }
@@ -148,8 +158,6 @@ await new Promise((resolve, reject) => {
   archive.finalize();
 });
 
-fs.rmSync(staging, { recursive: true, force: true });
-
 function listZipEntries(zipPath) {
   try {
     const out = execFileSync('unzip', ['-Z1', zipPath], { encoding: 'utf8' });
@@ -161,7 +169,9 @@ function listZipEntries(zipPath) {
 
 const entries = listZipEntries(outZip);
 if (entries) {
-  const hosts = entries.filter((e) => ALL_NEU_BINARIES.has(path.posix.basename(e)));
+  const hosts = entries.filter(
+    (e) => ALL_NEU_BINARIES.has(path.posix.basename(e)) || path.posix.basename(e) === 'OpenSpider.exe',
+  );
   if (hosts.length !== 1) {
     console.error(`ZIP must contain exactly 1 Neutralino binary, found ${hosts.length}:`);
     for (const h of hosts) console.error(`  ${h}`);
@@ -172,7 +182,52 @@ if (entries) {
   for (const e of entries) console.log(`  ${e}`);
 } else {
   console.log(`Packaged ${outZip}`);
-  console.log(`  ${neuBinary}`);
+  console.log(`  ${stagedHostName}`);
   console.log('  resources.neu');
   console.log('  extensions/');
 }
+
+/** Windows portable SFX: one .exe download that always extracts host+resources+extensions. */
+if (goos === 'windows') {
+  const version =
+    process.env.GITHUB_REF_NAME?.replace(/^v/, '') ||
+    JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version ||
+    'dev';
+  const portableDir = path.join(root, 'go', 'cmd', 'winportable');
+  const payloadPath = path.join(portableDir, 'payload.zip');
+  fs.copyFileSync(outZip, payloadPath);
+
+  const outExe = path.join(outDir, 'OpenSpider-windows-x64.exe');
+  if (fs.existsSync(outExe)) fs.rmSync(outExe);
+
+  const ldflags = `-H windowsgui -X main.version=${version}`;
+  execFileSync(
+    'go',
+    ['build', '-ldflags', ldflags, '-o', outExe, './cmd/winportable'],
+    {
+      cwd: path.join(root, 'go'),
+      env: {
+        ...process.env,
+        GOOS: 'windows',
+        GOARCH: goarch === 'amd64' ? 'amd64' : goarch,
+        CGO_ENABLED: '0',
+      },
+      stdio: 'inherit',
+    },
+  );
+
+  // Restore tiny placeholder so tree stays small for local commits.
+  const placeholder = path.join(portableDir, 'payload.placeholder.zip');
+  if (fs.existsSync(placeholder)) {
+    fs.copyFileSync(placeholder, payloadPath);
+  }
+
+  const st = fs.statSync(outExe);
+  if (st.size < 1_000_000) {
+    console.error(`Portable exe too small (${st.size}) — payload embed failed`);
+    process.exit(1);
+  }
+  console.log(`Portable Windows EXE: ${outExe} (${st.size} bytes)`);
+}
+
+fs.rmSync(staging, { recursive: true, force: true });

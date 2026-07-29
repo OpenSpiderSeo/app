@@ -100,13 +100,24 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           OPENSPIDER_RELEASE: '1'
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
           node scripts/package-release.mjs ${{ matrix.artifact }}
           # Ensure ZIP resources.neu is OpenSpider, not Neutralino sample
           TMP=$(mktemp -d)
           unzip -q -d "$TMP" "dist/release/${{ matrix.artifact }}.zip"
           node scripts/verify-resources-neu.mjs "$TMP/resources.neu"
+          test -f "$TMP/resources.neu"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            test -f "$TMP/OpenSpider.exe"
+          else
+            test "$(find "$TMP" -maxdepth 1 -type f -name 'openspider-*' | wc -l)" -eq 1
+          fi
           rm -rf "$TMP"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            test -f dist/release/OpenSpider-windows-x64.exe
+            echo "OK: portable Windows EXE $(wc -c < dist/release/OpenSpider-windows-x64.exe) bytes"
+          fi
 
       - name: Verify ZIP is single-platform only
         shell: bash
@@ -115,7 +126,7 @@ jobs:
           test -f "$ZIP"
           echo "=== $ZIP ==="
           unzip -l "$ZIP"
-          COUNT=$(unzip -Z1 "$ZIP" | grep -cE '^openspider-(linux|mac)_|^openspider-win_.*\.exe$' || true)
+          COUNT=$(unzip -Z1 "$ZIP" | grep -cE '^openspider-(linux|mac)_|^openspider-win_.*\.exe$|^OpenSpider\.exe$' || true)
           if [ "$COUNT" -ne 1 ]; then
             echo "Expected exactly 1 Neutralino host binary in ZIP, found $COUNT"
             unzip -Z1 "$ZIP"
@@ -127,7 +138,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: dist/release/${{ matrix.artifact }}.zip
+          path: dist/release/
           if-no-files-found: error
 
   release:
@@ -143,7 +154,7 @@ jobs:
           merge-multiple: true
           pattern: openspider-*
 
-      - name: List release assets (must be 4 separate ZIPs)
+      - name: List release assets
         shell: bash
         run: |
           echo "=== artifacts dir ==="
@@ -151,14 +162,13 @@ jobs:
           test -f artifacts/openspider-linux-x64.zip
           test -f artifacts/openspider-macos-x64.zip
           test -f artifacts/openspider-macos-arm64.zip
-          test -f artifacts/openspider-windows-x64.zip
-          # Guard: no fat mega-zip
+          test -f artifacts/OpenSpider-windows-x64.exe
+          # Windows: direct EXE is the user-facing asset (ZIP optional / not required)
           if ls artifacts/*all* artifacts/*universal* artifacts/openspider.zip 2>/dev/null; then
             echo "Unexpected combined archive present"
             exit 1
           fi
-          COUNT=$(find artifacts -name '*.zip' | wc -l)
-          test "$COUNT" -eq 4
+          test "$(find artifacts -name 'OpenSpider-windows-x64.exe' | wc -l)" -eq 1
 
       - name: Prepare release notes
         run: |
@@ -167,7 +177,7 @@ jobs:
           echo "--- release body ---"
           cat release-body.md
 
-      - name: Create GitHub Release (4 per-OS ZIPs)
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: false
@@ -178,4 +188,4 @@ jobs:
             artifacts/openspider-linux-x64.zip
             artifacts/openspider-macos-x64.zip
             artifacts/openspider-macos-arm64.zip
-            artifacts/openspider-windows-x64.zip
+            artifacts/OpenSpider-windows-x64.exe
