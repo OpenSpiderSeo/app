@@ -1,34 +1,52 @@
 #!/usr/bin/env node
 /**
  * Fail CI if packaged resources.neu is missing OpenSpider UI (or still Neutralino sample).
+ * Uses asar Node API (Windows-safe — no .bin/asar shell shim).
  * Usage: node scripts/verify-resources-neu.mjs [path/to/resources.neu]
  */
-import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const neuPath =
-  process.argv[2] ?? path.join(root, 'neutralino', 'dist', 'openspider', 'resources.neu');
+const neuPath = path.resolve(
+  process.argv[2] ?? path.join(root, 'neutralino', 'dist', 'openspider', 'resources.neu'),
+);
 
 if (!fs.existsSync(neuPath)) {
   console.error(`Missing ${neuPath}`);
   process.exit(1);
 }
 
-const asarBin = path.join(root, 'node_modules', '.bin', 'asar');
-if (!fs.existsSync(asarBin)) {
-  console.error('Missing node_modules/.bin/asar');
-  process.exit(1);
+function loadAsar() {
+  const require = createRequire(import.meta.url);
+  try {
+    return require('asar');
+  } catch {
+    /* fall through */
+  }
+  try {
+    const neuReq = createRequire(
+      pathToFileURL(path.join(root, 'node_modules', '@neutralinojs', 'neu', 'package.json')).href,
+    );
+    return neuReq('asar');
+  } catch (e) {
+    console.error('Unable to load asar module:', e.message);
+    process.exit(1);
+  }
 }
 
+const asar = loadAsar();
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'os-neu-verify-'));
 const out = path.join(tmp, 'out');
-const r = spawnSync(asarBin, ['extract', neuPath, out], { encoding: 'utf8' });
-if (r.status !== 0) {
-  console.error(r.stderr || r.stdout || 'asar extract failed');
+fs.mkdirSync(out, { recursive: true });
+
+try {
+  asar.extractAll(neuPath, out);
+} catch (e) {
+  console.error('asar extract failed:', e.message || e);
   process.exit(1);
 }
 
@@ -63,13 +81,9 @@ if (js.length < 1) {
 }
 
 const jsPath = path.join(assetsDir, js[0]);
-const jsHead = fs.readFileSync(jsPath, 'utf8').slice(0, 2000);
-if (!/OpenSpider|createRoot|openspider/i.test(jsHead + fs.readFileSync(jsPath, 'utf8').slice(0, 50_000))) {
-  // soft check — minified may rename; require non-trivial size instead
-  if (fs.statSync(jsPath).size < 50_000) {
-    console.error(`App bundle too small (${fs.statSync(jsPath).size} bytes): ${js[0]}`);
-    process.exit(1);
-  }
+if (fs.statSync(jsPath).size < 50_000) {
+  console.error(`App bundle too small (${fs.statSync(jsPath).size} bytes): ${js[0]}`);
+  process.exit(1);
 }
 
 console.log(`OK: ${neuPath}`);

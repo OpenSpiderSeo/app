@@ -17,6 +17,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^5.62.0
         version: 5.62.0(eslint@8.57.1)(typescript@5.8.3)
+      asar:
+        specifier: 3.2.0
+        version: 3.2.0
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
