@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Нагрузка ПК** (CPU/RAM) на Windows/macOS всегда была 0% — sampler читал только `/proc` (Linux). Добавлены `GlobalMemoryStatusEx` / `GetSystemTimes` для Windows и sysctl RAM для macOS.
+- **Нагрузка ПК** (CPU/RAM) на Windows всегда была 0% — sampler читал только `/proc` (Linux). Добавлены `GlobalMemoryStatusEx` / `GetSystemTimes` для Windows.
 
 ## [1.0.2] — 2026-07-29
 

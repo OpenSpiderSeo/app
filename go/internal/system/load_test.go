@@ -10,7 +10,7 @@ import (
 
 func TestLoadSnapshotHasHostMemoryOnSupportedOS(t *testing.T) {
 	switch runtime.GOOS {
-	case "linux", "windows", "darwin":
+	case "linux", "windows":
 	default:
 		t.Skip("no host memory sampler on", runtime.GOOS)
 	}
