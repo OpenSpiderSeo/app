@@ -621,6 +621,7 @@ export const ru: Record<keyof typeof en, string> = {
   'labs.indexnow.gen': 'Сгенерировать ключ',
   'labs.indexnow.download': 'Скачать key.txt',
   'labs.indexnow.downloaded': 'Файл ключа сохранён: {path}',
+  'labs.indexnow.downloadFailed': 'Скачивание ключа IndexNow пока недоступно.',
 
   'integrations.indexnow.title': 'IndexNow',
   'integrations.indexnow.body':
@@ -628,6 +629,7 @@ export const ru: Record<keyof typeof en, string> = {
   'integrations.indexnow.key': 'Ключ IndexNow',
   'integrations.indexnow.download': 'Скачать key.txt',
   'integrations.indexnow.downloaded': 'Сохранено {path}. Загрузите как {hint}',
+  'integrations.indexnow.downloadFailed': 'Скачивание ключа IndexNow пока недоступно.',
 
   'dash.eyebrow': 'Сводка',
   'dash.title': 'Что делать дальше',
@@ -896,7 +898,7 @@ export const ru: Record<keyof typeof en, string> = {
   'config.advanced': 'Дополнительно',
 
   'schedule.title': 'Обход по расписанию',
-  'schedule.subtitle': 'Работает, пока приложение открыто (проверка каждую минуту).',
+  'schedule.subtitle': 'Пока не доступно в Go-движке — сохранение покажет ошибку.',
   'schedule.enabled': 'Включить обход по расписанию',
   'schedule.frequency': 'Частота',
   'schedule.hourly': 'Каждый час',

@@ -474,6 +474,7 @@ export const en = {
   'integrations.indexnow.key': 'IndexNow key',
   'integrations.indexnow.download': 'Download key.txt',
   'integrations.indexnow.downloaded': 'Saved {path}. Upload as {hint}',
+  'integrations.indexnow.downloadFailed': 'IndexNow key download is not available yet.',
   'integrations.csv.body': 'Import Search Console, Webmaster, GA4, or backlink exports and merge with crawl data.',
   'integrations.csv.gsc': 'Import Search Console CSV',
   'integrations.csv.webmaster': 'Import Webmaster CSV',
@@ -625,6 +626,7 @@ export const en = {
   'labs.indexnow.gen': 'Generate key',
   'labs.indexnow.download': 'Download key.txt',
   'labs.indexnow.downloaded': 'Saved key file: {path}',
+  'labs.indexnow.downloadFailed': 'IndexNow key download is not available yet.',
 
   'dash.eyebrow': 'Summary',
   'dash.title': 'What to do next',
@@ -890,7 +892,7 @@ export const en = {
   'config.advanced': 'Advanced',
 
   'schedule.title': 'Scheduled crawl',
-  'schedule.subtitle': 'Runs while the app is open (checks every minute).',
+  'schedule.subtitle': 'Not available in the Go engine yet — save will report an error.',
   'schedule.enabled': 'Enable scheduled crawl',
   'schedule.frequency': 'Frequency',
   'schedule.hourly': 'Hourly',

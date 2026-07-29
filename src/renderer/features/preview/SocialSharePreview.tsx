@@ -31,14 +31,43 @@ export const SocialSharePreview = memo(function SocialSharePreview({
   compact = false,
 }: SocialSharePreviewProps) {
   const { t } = useI18n();
-  const [imgMode, setImgMode] = useState<PreviewImageLoadMode | 'failed'>('direct');
+  const [imgMode, setImgMode] = useState<PreviewImageLoadMode | 'rpc' | 'failed'>('direct');
+  const [rpcSrc, setRpcSrc] = useState<string | null>(null);
 
   useEffect(() => {
     setImgMode('direct');
+    setRpcSrc(null);
   }, [image]);
 
+  useEffect(() => {
+    const trimmed = image?.trim();
+    if (imgMode !== 'rpc' || !trimmed) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const res = await window.openspider.proxyImageData?.(trimmed);
+        if (!alive) return;
+        if (res?.ok && res.base64 && res.contentType) {
+          setRpcSrc(`data:${res.contentType};base64,${res.base64}`);
+        } else {
+          setImgMode('failed');
+        }
+      } catch {
+        if (alive) setImgMode('failed');
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [imgMode, image]);
+
   const hasImageUrl = Boolean(image?.trim());
-  const imgSrc = hasImageUrl && imgMode !== 'failed' ? previewImageSrc(image, imgMode) : null;
+  const imgSrc =
+    imgMode === 'rpc'
+      ? rpcSrc
+      : hasImageUrl && imgMode !== 'failed'
+        ? previewImageSrc(image, imgMode === 'proxy' ? 'proxy' : 'direct')
+        : null;
   const showImage = Boolean(imgSrc);
   const displayTitle = truncate(title || domain, 80);
   const displayDesc = truncate(description, 160);
@@ -79,7 +108,13 @@ export const SocialSharePreview = memo(function SocialSharePreview({
             className="social-preview__img"
             referrerPolicy="no-referrer"
             onError={() => {
-              setImgMode((mode) => (mode === 'direct' ? 'proxy' : 'failed'));
+              setImgMode((mode) => {
+                if (mode === 'direct') {
+                  if (typeof window.openspider?.proxyImageData === 'function') return 'rpc';
+                  return 'proxy';
+                }
+                return 'failed';
+              });
             }}
           />
         </button>

@@ -252,9 +252,14 @@ export interface OpenSpiderApi {
   ) => Promise<
     | { ok: true; path: string; key: string; hint: string }
     | { ok: false; canceled: true }
+    | { ok: false; canceled?: false; error: string }
   >;
   getHeadChecklist: () => Promise<HeadChecklistSiteSummary>;
   openExternal: (url: string) => Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Fetch remote image via Go (data URL) — works in Neutralino without HTTP sidecar. */
+  proxyImageData: (
+    imageUrl: string,
+  ) => Promise<{ ok: boolean; contentType?: string; base64?: string; error?: string }>;
   checkKeywordMentions: (input: KeywordMentionsInput) => Promise<KeywordMentionsResult>;
   extractSitemapUrls: (input: SitemapExtractInput) => Promise<SitemapExtractResult>;
   checkOutboundLinks: (input: OutboundLinksCheckInput) => Promise<OutboundLinksCheckResult>;

@@ -115,6 +115,17 @@ func (s *Server) handleExportCsvIssues(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, map[string]string{"path": path})
 }
 
+func (s *Server) handleExportSitemap(w http.ResponseWriter, _ *http.Request) {
+	state := s.engine.GetState()
+	startURL := strVal(state.Progress.StartURL)
+	path, err := export.AutoExportSitemapXml(state.Pages, startURL)
+	if err != nil {
+		writeJSON(w, map[string]interface{}{"error": err.Error()})
+		return
+	}
+	writeJSON(w, map[string]string{"path": path})
+}
+
 func strVal(p *string) string {
 	if p == nil {
 		return ""

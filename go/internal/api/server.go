@@ -92,6 +92,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/report/current", s.handleCurrentReport)
 	s.mux.HandleFunc("POST /api/report/export-csv-pages", s.handleExportCsvPages)
 	s.mux.HandleFunc("POST /api/report/export-csv-issues", s.handleExportCsvIssues)
+	s.mux.HandleFunc("POST /api/report/export-sitemap", s.handleExportSitemap)
+	s.mux.HandleFunc("GET /api/proxy/image-data", s.handleProxyImageData)
 
 	s.mux.HandleFunc("GET /api/projects", s.handleListProjects)
 	s.mux.HandleFunc("GET /api/projects/active", s.handleGetActiveProject)

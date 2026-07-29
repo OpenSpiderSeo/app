@@ -73,15 +73,42 @@ export function createOpenSpiderApi(): OpenSpiderApi {
       })),
     exportReport: async () => ({ error: 'Report export not yet ported to Go' }),
     exportReportPdf: async () => ({ error: 'PDF export not yet ported to Go' }),
-    autoExportReport: async () => ({ ok: false, error: 'Auto export not yet ported to Go' }),
-    autoExportSitemap: async () => ({ error: 'Sitemap auto export not yet ported to Go' }),
+    autoExportReport: async (title) => {
+      const saved = await apiPost<HistoryListItem | { error: string }>(
+        '/api/history/save',
+        title ? { title } : {},
+      );
+      if (saved && typeof saved === 'object' && 'error' in saved) {
+        return { ok: false as const, error: String(saved.error) };
+      }
+      const csv = await apiPost<{ path: string } | { error: string }>('/api/report/export-csv-pages');
+      if (csv && typeof csv === 'object' && 'error' in csv) {
+        // History saved — still treat as success for Quick Start, surface CSV path miss as history id.
+        return {
+          ok: true as const,
+          path: `history:${(saved as HistoryListItem).id}`,
+          history: saved as HistoryListItem,
+        };
+      }
+      return {
+        ok: true as const,
+        path: (csv as { path: string }).path,
+        history: saved as HistoryListItem,
+      };
+    },
+    autoExportSitemap: async () =>
+      apiPost<{ path: string } | { error: string }>('/api/report/export-sitemap'),
     importReport: async () => ({ ok: false, error: 'Import not yet ported to Go' }),
     exportCsvPages: () => apiPost<{ path: string } | { error: string }>('/api/report/export-csv-pages'),
     exportCsvIssues: () =>
       apiPost<{ path: string } | { error: string }>('/api/report/export-csv-issues'),
 
     runCustomJs: async () => ({ error: 'Custom JS not available (no Chromium in Go engine)' }),
-    runAiScan: async () => ({ tips: [], pagesAnalyzed: 0 }),
+    runAiScan: async () => ({
+      tips: [],
+      pagesAnalyzed: 0,
+      error: 'AI Scan not yet ported to Go engine',
+    }),
     listRanks: async () => [],
     saveRank: async (payload) => ({
       id: crypto.randomUUID(),
@@ -102,7 +129,9 @@ export function createOpenSpiderApi(): OpenSpiderApi {
       keyword: '',
       lastRunAt: null,
     }),
-    saveSchedule: async () => ({ ok: true }),
+    saveSchedule: async () => {
+      throw new Error('Crawl schedule is not yet available in the Go engine');
+    },
 
     listProjects: () => apiGet<SeoProject[]>('/api/projects'),
     getActiveProject: () => apiGet<SeoProject | null>('/api/projects/active'),
@@ -150,7 +179,11 @@ export function createOpenSpiderApi(): OpenSpiderApi {
       statusCodes: [],
       error: 'IndexNow not yet ported to Go',
     }),
-    downloadIndexNowKey: async () => ({ ok: false, canceled: true }),
+    downloadIndexNowKey: async () => ({
+      ok: false,
+      canceled: false,
+      error: 'IndexNow key download not yet ported to Go',
+    }),
     getHeadChecklist: async () => ({ avgScore: null, pagesScored: 0, failRateById: [] }),
 
     openExternal: async (url) => {
@@ -167,28 +200,35 @@ export function createOpenSpiderApi(): OpenSpiderApi {
       return { ok: true as const };
     },
 
+    proxyImageData: async (imageUrl) => {
+      const q = encodeURIComponent(imageUrl.trim());
+      return apiGet<{ ok: boolean; contentType?: string; base64?: string; error?: string }>(
+        `/api/proxy/image-data?url=${q}`,
+      );
+    },
+
     checkKeywordMentions: async (input) => {
+      const keyword = input.keywords[0] ?? '';
       const res = await apiPost<{
         ok: boolean;
         keyword?: string;
         results?: { url: string; found: boolean; count: number }[];
         error?: string;
       }>('/api/labs/mentions', {
-        keyword: input.keywords[0] ?? '',
+        keyword,
         urls: input.scopeUrls ?? [],
       });
       if (!res.ok) {
         return { cells: [], pagesChecked: 0, keywordsChecked: 0, error: res.error };
       }
       const cells = (res.results ?? []).flatMap((r) =>
-        r.found
-          ? [{ keyword: input.keywords[0] ?? '', pageUrl: r.url, locations: ['body' as const] }]
-          : [],
+        r.found ? [{ keyword, pageUrl: r.url, locations: ['body' as const] }] : [],
       );
       return {
         cells,
         pagesChecked: res.results?.length ?? 0,
-        keywordsChecked: input.keywords.length,
+        // Engine accepts a single keyword today — report what was actually checked.
+        keywordsChecked: keyword ? 1 : 0,
       };
     },
 

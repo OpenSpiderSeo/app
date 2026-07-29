@@ -225,6 +225,12 @@ export const IntegrationsPanel = memo(function IntegrationsPanel() {
                       hint: result.hint,
                     }),
                   );
+                } else {
+                  setMsg(
+                    'error' in result && result.error
+                      ? result.error
+                      : t('integrations.indexnow.downloadFailed'),
+                  );
                 }
               } catch (err) {
                 setMsg(err instanceof Error ? err.message : String(err));

@@ -21,15 +21,43 @@ export const OpenExternalImage = memo(function OpenExternalImage({
 }: OpenExternalImageProps) {
   const { t } = useI18n();
   const trimmed = url.trim();
-  const [imgMode, setImgMode] = useState<PreviewImageLoadMode | 'failed'>('direct');
+  const [imgMode, setImgMode] = useState<PreviewImageLoadMode | 'rpc' | 'failed'>('direct');
+  const [rpcSrc, setRpcSrc] = useState<string | null>(null);
 
   useEffect(() => {
     setImgMode('direct');
+    setRpcSrc(null);
   }, [trimmed]);
+
+  useEffect(() => {
+    if (imgMode !== 'rpc' || !trimmed) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const res = await window.openspider.proxyImageData?.(trimmed);
+        if (!alive) return;
+        if (res?.ok && res.base64 && res.contentType) {
+          setRpcSrc(`data:${res.contentType};base64,${res.base64}`);
+        } else {
+          setImgMode('failed');
+        }
+      } catch {
+        if (alive) setImgMode('failed');
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [imgMode, trimmed]);
 
   if (!trimmed) return null;
 
-  const imgSrc = imgMode !== 'failed' ? previewImageSrc(trimmed, imgMode) : null;
+  const imgSrc =
+    imgMode === 'rpc'
+      ? rpcSrc
+      : imgMode !== 'failed'
+        ? previewImageSrc(trimmed, imgMode === 'proxy' ? 'proxy' : 'direct')
+        : null;
 
   const open = (e: MouseEvent) => {
     e.stopPropagation();
@@ -53,7 +81,15 @@ export const OpenExternalImage = memo(function OpenExternalImage({
             className={thumbClassName}
             referrerPolicy="no-referrer"
             onError={() => {
-              setImgMode((mode) => (mode === 'direct' ? 'proxy' : 'failed'));
+              setImgMode((mode) => {
+                if (mode === 'direct') {
+                  // Packaged Neutralino has no :7845 HTTP sidecar — use RPC JSON proxy.
+                  if (typeof window.openspider?.proxyImageData === 'function') return 'rpc';
+                  return 'proxy';
+                }
+                if (mode === 'proxy' || mode === 'rpc') return 'failed';
+                return 'failed';
+              });
             }}
           />
         ) : (

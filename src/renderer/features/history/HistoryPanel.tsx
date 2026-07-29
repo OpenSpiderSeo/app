@@ -241,7 +241,10 @@ export const HistoryPanel = memo(function HistoryPanel({
                         size="sm"
                         variant="ghost"
                         onPress={async () => {
-                          await window.openspider.exportReport(item.id);
+                          const res = await window.openspider.exportReport(item.id);
+                          if (res && typeof res === 'object' && 'error' in res && res.error) {
+                            setMessage(String(res.error));
+                          }
                         }}
                       >
                         {t('history.export')}

@@ -99,10 +99,11 @@ func BuildIssuesCsv(issues []types.SeoIssue) string {
 }
 
 func WriteAutoCsv(filename, content string) (string, error) {
-	dir := filepath.Join(os.Getenv("HOME"), "Documents", "OpenSpider", "csv")
-	if home, err := os.UserHomeDir(); err == nil {
-		dir = filepath.Join(home, "Documents", "OpenSpider", "csv")
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return "", fmt.Errorf("resolve home dir: %w", err)
 	}
+	dir := filepath.Join(home, "Documents", "OpenSpider", "csv")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err
 	}
@@ -111,6 +112,41 @@ func WriteAutoCsv(filename, content string) (string, error) {
 		return "", err
 	}
 	return path, nil
+}
+
+func BuildPagesUrlList(pages []types.CrawledPage) string {
+	var b strings.Builder
+	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>`)
+	b.WriteByte('\n')
+	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`)
+	b.WriteByte('\n')
+	for _, p := range pages {
+		if p.URL == "" {
+			continue
+		}
+		b.WriteString("  <url><loc>")
+		b.WriteString(xmlEscape(p.URL))
+		b.WriteString("</loc></url>\n")
+	}
+	b.WriteString("</urlset>\n")
+	return b.String()
+}
+
+func xmlEscape(s string) string {
+	r := strings.NewReplacer(
+		`&`, `&amp;`,
+		`<`, `&lt;`,
+		`>`, `&gt;`,
+		`"`, `&quot;`,
+		`'`, `&apos;`,
+	)
+	return r.Replace(s)
+}
+
+func AutoExportSitemapXml(pages []types.CrawledPage, startURL string) (string, error) {
+	xml := BuildPagesUrlList(pages)
+	name := fmt.Sprintf("sitemap-%s-%d.xml", hostSlug(startURL), time.Now().UnixMilli())
+	return WriteAutoCsv(name, xml)
 }
 
 func AutoExportPagesCsv(pages []types.CrawledPage, startURL string) (string, error) {

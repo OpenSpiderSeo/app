@@ -366,6 +366,12 @@ export const LabsPanel = memo(function LabsPanel({
                   if (result.ok) {
                     setIndexNowKey(result.key);
                     setMessage(t('labs.indexnow.downloaded', { path: result.path }));
+                  } else {
+                    setMessage(
+                      'error' in result && result.error
+                        ? result.error
+                        : t('labs.indexnow.downloadFailed'),
+                    );
                   }
                 } catch (err) {
                   setMessage(err instanceof Error ? err.message : String(err));

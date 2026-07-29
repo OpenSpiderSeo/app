@@ -5,6 +5,16 @@ All notable changes to **OpenSpider** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] — 2026-07-29
+
+### Fixed
+
+- Quick Start auto-export: saves history + CSV / sitemap XML instead of always failing with a stub.
+- Preview images in packaged app: RPC `image-data` proxy (no silent fail when HTTP sidecar is absent).
+- Mentions: `keywordsChecked` reports the keyword actually checked (engine is single-keyword).
+- Schedule / AI Scan / IndexNow download: honest errors instead of fake success / silent no-op.
+- CSV export path on Windows: use `os.UserHomeDir()` only (no empty `HOME`).
+
 ## [1.0.3] — 2026-07-29
 
 ### Fixed
@@ -56,6 +66,7 @@ First clean public release of the **Neutralino.js + Vite/React/TS + Go extension
 - **WSL**: native window needs WSLg; otherwise run on Windows for GUI QA.
 - Stubs remain for session/schedule/ranks/metrika/indexnow/auto-update where not yet implemented.
 
+[1.0.4]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.4
 [1.0.3]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.3
 [1.0.2]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.2
 [1.0.1]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.1
