@@ -5,6 +5,12 @@ All notable changes to **OpenSpider** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] — 2026-07-29
+
+### Fixed
+
+- **Нагрузка ПК** (CPU/RAM) на Windows/macOS всегда была 0% — sampler читал только `/proc` (Linux). Добавлены `GlobalMemoryStatusEx` / `GetSystemTimes` для Windows и sysctl RAM для macOS.
+
 ## [1.0.2] — 2026-07-29
 
 ### Fixed
@@ -50,6 +56,7 @@ First clean public release of the **Neutralino.js + Vite/React/TS + Go extension
 - **WSL**: native window needs WSLg; otherwise run on Windows for GUI QA.
 - Stubs remain for session/schedule/ranks/metrika/indexnow/auto-update where not yet implemented.
 
+[1.0.3]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.3
 [1.0.2]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.2
 [1.0.1]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.1
 [1.0.0]: https://github.com/OpenSpiderSeo/app/releases/tag/v1.0.0
